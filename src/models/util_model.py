@@ -17,9 +17,10 @@ def get_OCR(image):
   return pytesseract.image_to_string(image=image, lang='thnd', config=tesseract_config)
 
 
-def OCR(image_dict: dict):
+def images_to_texts(image_dict: dict):
   ocr_dict = {}
   for k, v in image_dict.items():
+    
     ocr_dict[k] = get_OCR(v)
   return ocr_dict
   

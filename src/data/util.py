@@ -40,3 +40,24 @@ def get_info(course_dict: dict):
         print(f"{k}: shape(s) = {each_size}")
     unique_size /= len(course_dict)
     return True if unique_size == each_size else False
+
+def get_partition(n: int):
+    result = 1/n
+    return [result] * n 
+
+def slice_image(image, n: int):
+    vertical_percentages = get_partition(n)
+    # Load the image
+    width, height = image.size
+
+    # Calculate vertical slice points
+    vertical_points = [0] + [int(height * sum(vertical_percentages[:i+1])) for i in range(len(vertical_percentages))]
+    
+    # Slice the image and store each window
+    slices_dict = {}
+    for i in range(len(vertical_points) - 1):
+        upper = vertical_points[i]
+        lower = vertical_points[i + 1]
+        slice_img = image.crop((0, upper, width, lower))
+        slices_dict[i] = slice_img
+    return slices_dict
