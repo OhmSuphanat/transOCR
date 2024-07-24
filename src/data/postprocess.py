@@ -3,7 +3,7 @@ import pandas as pd
 
 def filter_course(text: str):
   text = text.strip()
-  pattern = r'[\u0E00-\u0E7F|0-9]{0,1}[0-9|๑-๙]{5}'
+  pattern = r'[\u0E00-\u0E7F|0-9]{0,1}[0-9]{5}'
   if re.search(pattern, text):
     return text.replace("|", " ")
   return 
@@ -20,29 +20,33 @@ def get_courseID(text: str):
     if id[0] in ['ล']:
       id =  "ส" + id[1:]
     return id
+  print("Error from get_courseID")
+  print(text)
   return "999"
 
 def get_course_name(text: str):
-  print(text)
   pattern = r'[\u0E00-\u0E7F|A-z|\/]{3,}[\s]{0,1}[0-9]{0,1}'
   result = re.findall(pattern=pattern, string=text)
-  return result[0].strip()
-
-def name_case(text: str):
-  pattern = r'[\u0E00-\u0E7F]{30,}'
-  result = re.findall(pattern=pattern, string=text)
   if result:
-    text = re.sub(r'[\u0E00-\u0E7F]', ' ', text)
-  return text
+      return result[0].strip()
+  
+  print("Error from get_course_name")
+  print(text)
+  return "999"
 
 def get_numeric(text: str):
-  text = name_case(text=text)
   pattern = r'[\s]{2,}.+'
   result = re.findall(pattern=pattern, string=text)
-  result = result[0]
-  allowed_chars = "12345. "
+  if result:
+    result = result[0]
+  else:
+    print("Error from get_numeric")
+    print(text)
+    result = "999"
+  allowed_chars = "123456 "
   pattern = f"[^{re.escape(allowed_chars)}]"
   result = re.sub(pattern=pattern, repl='', string=result)
+  result = result.replace('6', '4')
   return result.strip()
 
 def get_unit(num_list: list):

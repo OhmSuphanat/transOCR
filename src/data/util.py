@@ -17,7 +17,6 @@ def get_course(text: str, idx: int):
                  "name": course_names.to_list(),
                  "unit": course_unit.to_list(),
                  "grade": course_grade.to_list(),
-                 "weight": course_weight.to_list()
                  }
   return course_dict
 
@@ -25,19 +24,17 @@ def make_course(text_dict: dict):
     courses_df = pd.DataFrame()
     for idx, text in text_dict.items():
         courses = get_course(text, idx)
-        print(f"#section{idx}")
-        if not get_info(courses):
+        if not verify_courses(courses):
             raise ValueError("Amount Record's not balance.")
         courses_df = pd.concat([courses_df, pd.DataFrame(courses)])
     return courses_df.reset_index(drop=True).sort_values(['section'], ascending=True)
 
-def get_info(course_dict: dict):
+def verify_courses(course_dict: dict):
     unique_size = 0
     each_size = 0
     for k, v in course_dict.items():
         each_size = len(v)
         unique_size += each_size
-        print(f"{k}: shape(s) = {each_size}")
     unique_size /= len(course_dict)
     return True if unique_size == each_size else False
 
@@ -61,3 +58,22 @@ def slice_image(image, n: int):
         slice_img = image.crop((0, upper, width, lower))
         slices_dict[i] = slice_img
     return slices_dict
+
+def get_error(df: pd.core.frame.DataFrame):
+    return df.loc[(df.id == "999") | (df.name == "999") | (df.unit == 999) | (df.grade == 999)]
+
+def get_non_error(df: pd.core.frame.DataFrame):
+    return df.loc[~((df.id == "999") | (df.name == "999") | (df.unit == 999) | (df.grade == 999))]
+
+def focus_subject(image, subject_index: int, pad: int):
+    width, height = image.size
+    text_height_percent = 2.6
+    
+    # Calculate the height of each line in pixels using the given percentage
+    line_height = (text_height_percent / 100) * height
+    pading = line_height*pad
+
+    top_y = int(subject_index * line_height)-pading #pading เอาไว้แก้ขอบบน ขอบล่าง
+    bottom_y = int((subject_index + 1) * line_height)+pading
+    cropped_image = image.crop((0, top_y, width, bottom_y))
+    return cropped_image

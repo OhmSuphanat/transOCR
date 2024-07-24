@@ -20,8 +20,8 @@ def get_OCR(image):
 def images_to_texts(image_dict: dict):
   ocr_dict = {}
   for k, v in image_dict.items():
-    
-    ocr_dict[k] = get_OCR(v)
+    text = get_OCR(v)
+    ocr_dict[k] = text
   return ocr_dict
   
 
