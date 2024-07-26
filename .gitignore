@@ -254,6 +254,6 @@ $RECYCLE.BIN/
 # Excel
 data/**/*xlsx
 
-# Model
-data/model/
+# sensitive data
+data/
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,visualstudiocode,python
