@@ -25,7 +25,7 @@ def get_courseID(text: str):
   return "999"
 
 def get_course_name(text: str):
-  pattern = r'[\u0E00-\u0E7F|A-z|\/]{3,}[\s]{0,1}[0-9]{0,1}'
+  pattern = pattern = r'(?: [\u0E00-\u0E7F|A-z|\/]{3,})+'
   result = re.findall(pattern=pattern, string=text)
   if result:
       return result[0].strip()
@@ -34,7 +34,15 @@ def get_course_name(text: str):
   print(text)
   return "999"
 
+def text_for_numeric(text: str):
+  course_name = get_course_name(text)
+  text = text.replace(course_name, "")
+  text = text.replace('ง', '4')
+  return text
+
+
 def get_numeric(text: str):
+  text = text_for_numeric(text)
   pattern = r'[\s]{2,}.+'
   result = re.findall(pattern=pattern, string=text)
   if result:
@@ -62,6 +70,9 @@ def get_grade_and_unit(text: str):
   blocks = text.split()
   unit = 999
   grade = 999
+  if len(blocks) > 2:
+    blocks = blocks[-2:]
+
   if len(blocks) == 2:
     for idx, block in enumerate(blocks):
       digit = float(get_unique_characters(block))

@@ -1,4 +1,6 @@
 from src.data.postprocess import *
+from src.models.util_model import *
+
 
 def get_course(text: str, idx: int):
   words = pd.Series(text.split('\n'))
@@ -71,9 +73,28 @@ def focus_subject(image, subject_index: int, pad: int):
     
     # Calculate the height of each line in pixels using the given percentage
     line_height = (text_height_percent / 100) * height
-    pading = line_height*pad
+    pading = line_height*pad#pading เอาไว้แก้ขอบบน ขอบล่าง
 
-    top_y = int(subject_index * line_height)-pading #pading เอาไว้แก้ขอบบน ขอบล่าง
-    bottom_y = int((subject_index + 1) * line_height)+pading
+    if(int(subject_index * line_height)-pading < 0):
+        top_y = 0 
+    else:
+        top_y = int(subject_index * line_height)-pading
+    if(int((subject_index + 1) * line_height)+pading > height):
+        bottom_y = height
+    else:
+        bottom_y = int((subject_index + 1) * line_height)+pading
     cropped_image = image.crop((0, top_y, width, bottom_y))
     return cropped_image
+
+def get_lines_pos(image):
+    data = get_ocr_data(image)
+    line_pos = []
+    allow = True
+    texts = data.text.to_list()
+    for idx, text in enumerate(texts):
+        if type(text) == float:
+            allow = True
+        if allow and (type(text) == str):
+            line_pos.append(data.iloc[idx, [6, 7, 8, 9, 11]].to_dict())
+            allow = False
+    return line_pos
