@@ -13,14 +13,18 @@ pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
 
 
-def get_OCR(image):
+def get_ocr_text(image):
   return pytesseract.image_to_string(image=image, lang='thnd', config=tesseract_config)
 
+def get_ocr_data(image):
+  return pytesseract.pytesseract.image_to_data(image=image, lang='thnd', config=tesseract_config, output_type="data.frame")
 
-def OCR(image_dict: dict):
+
+def images_to_texts(image_dict: dict):
   ocr_dict = {}
   for k, v in image_dict.items():
-    ocr_dict[k] = get_OCR(v)
+    text = get_ocr_text(v)
+    ocr_dict[k] = text
   return ocr_dict
   
 

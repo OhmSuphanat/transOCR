@@ -16,21 +16,17 @@ def denoise(image):
                                          templateWindowSize=3, searchWindowSize=21)
     return cv2_to_pil(iso_image)
 
-def delete_line(image):
-    cv2_image = pil_to_cv2(image)
-    longest_side = max(cv2_image.shape)
-    minLineLength = int(longest_side * 0.25)  
-    maxLineGap = int(longest_side * 0.01)    
-    edges = cv2.Canny(cv2_image, 50, 150, apertureSize=3)
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=minLineLength, maxLineGap=maxLineGap)
-    mask = np.ones_like(image) * 255
-    if lines is not None:
-        for line in lines:
-            x1, y1, x2, y2 = line[0]
-            cv2.line(mask, (x1, y1), (x2, y2), (0, 0, 0), thickness=3)  # Adjust thickness if needed
-    mask_inv = cv2.bitwise_not(mask)
-    result = cv2.bitwise_or(cv2_image, mask_inv)
-    return cv2_to_pil(result)
+def add_white_space(image, width_percent: float):
+    # Calculate the new width for the white space
+    white_space_width = int(image.width * width_percent)
+
+    # Create a new image with white background
+    new_width = image.width + white_space_width
+    new_img = Image.new("RGB", (new_width, image.height), "white")
+
+    # Paste the original image on the new image, offset by the white space width
+    new_img.paste(image, (white_space_width, 0))
+    return new_img
 
 def pipeline(image):
     processed = denoise(image=image)
@@ -40,4 +36,5 @@ def preprocess(image_dict):
     for k, v in image_dict.items():
         image_dict[k] = pipeline(v)
     return image_dict
+
 
