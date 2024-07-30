@@ -1,87 +1,88 @@
-import re
 import pandas as pd
+from src.data import util
+from src.models import util_model
 
-def filter_course(text: str):
-  text = text.strip()
-  pattern = r'[\u0E00-\u0E7F|0-9]{0,1}[0-9]{5}'
-  if re.search(pattern, text):
-    return text.replace("|", " ")
-  return 
-
-def get_courseID(text: str):
-  pattern = r'[\u0E00-\u0E7F|0-9]{1}[0-9]{5}'
-  result = re.findall(pattern=pattern, string=text)
-  if result:
-    id = result[0]
-    if id[0] in ['1']:
-      id =  "I" + id[1:]
-    if id[0] in ['า', '7']:
-      id =  "ว" + id[1:]
-    if id[0] in ['ล']:
-      id =  "ส" + id[1:]
-    return id
-  print("Error from get_courseID")
-  print(text)
-  return "999"
-
-def get_course_name(text: str):
-  pattern = pattern = r'(?: [\u0E00-\u0E7F|A-z|\/]{3,})+'
-  result = re.findall(pattern=pattern, string=text)
-  if result:
-      return result[0].strip()
-  
-  print("Error from get_course_name")
-  print(text)
-  return "999"
-
-def text_for_numeric(text: str):
-  course_name = get_course_name(text)
+def text_for_numeric(text: str, course_name: str):
   text = text.replace(course_name, "")
   text = text.replace('ง', '4')
   return text
 
+def edit_courseID(courseID: str):
+  if courseID[0] in ['1']:
+      courseID =  "I" + courseID[1:]
+  if courseID[0] in ['า', '7']:
+    courseID =  "ว" + courseID[1:]
+  if courseID[0] in ['ล']:
+    courseID =  "ส" + courseID[1:]
+  return courseID
 
-def get_numeric(text: str):
-  text = text_for_numeric(text)
-  pattern = r'[\s]{2,}.+'
-  result = re.findall(pattern=pattern, string=text)
-  if result:
-    result = result[0]
-  else:
-    print("Error from get_numeric")
-    print(text)
-    result = "999"
-  allowed_chars = "123456 "
-  pattern = f"[^{re.escape(allowed_chars)}]"
-  result = re.sub(pattern=pattern, repl='', string=result)
-  result = result.replace('6', '4')
-  return result.strip()
+def get_partition(n: int):
+    result = 1/n
+    return [result] * n 
 
-def get_unit(num_list: list):
-  return num_list[0]
+def slice_image(image, n: int):
+    vertical_percentages = get_partition(n)
+    # Load the image
+    width, height = image.size
 
-def get_grade(num_list: list):
-  return num_list[1]
+    # Calculate vertical slice points
+    vertical_points = [0] + [int(height * sum(vertical_percentages[:i+1])) for i in range(len(vertical_percentages))]
+    
+    # Slice the image and store each window
+    slices_dict = {}
+    for i in range(len(vertical_points) - 1):
+        upper = vertical_points[i]
+        lower = vertical_points[i + 1]
+        slice_img = image.crop((0, upper, width, lower))
+        slices_dict[i] = slice_img
+    return slices_dict
 
-def get_unique_characters(text):
-    return ''.join(sorted(set(text)))
+def focus_subject(image, subject_index: int, pad: int):
+    width, height = image.size
+    text_height_percent = 2.6
+    
+    # Calculate the height of each line in pixels using the given percentage
+    line_height = (text_height_percent / 100) * height
+    pading = line_height*pad#pading เอาไว้แก้ขอบบน ขอบล่าง
 
-def get_grade_and_unit(text: str):
-  blocks = text.split()
-  unit = 999
-  grade = 999
-  if len(blocks) > 2:
-    blocks = blocks[-2:]
+    if(int(subject_index * line_height)-pading < 0):
+        top_y = 0 
+    else:
+        top_y = int(subject_index * line_height)-pading
+    if(int((subject_index + 1) * line_height)+pading > height):
+        bottom_y = height
+    else:
+        bottom_y = int((subject_index + 1) * line_height)+pading
+    cropped_image = image.crop((0, top_y, width, bottom_y))
+    return cropped_image
 
-  if len(blocks) == 2:
-    for idx, block in enumerate(blocks):
-      digit = float(get_unique_characters(block))
-      if digit > 4:
-        digit /= 10
-      blocks[idx] = digit
-    unit = blocks[0]
-    grade = blocks[1]
-  return [unit, grade]
-  
+def recover_error(courses_df: pd.core.frame.DataFrame, image_dict: dict):
+  #best bigdog the core engineer. always love you my bois
+  error_df = util.get_error(courses_df).reset_index(drop=True)
+  for error_record in error_df.values:
+    print(error_record)
+    section_idx = error_record[2]
+    section_image = image_dict[int(section_idx[0])]
+
+    pads = [12, 10, 8, 6, 4]
+    for pad in pads:
+        focus_image = focus_subject(section_image, int(section_idx[1:]), pad)
+        focus_text = util_model.images_to_texts({section_idx[0]: focus_image})
+        focus_df = util.make_course(focus_text)
+        focus_df = util.get_non_error(focus_df)
+        is_help = True if (error_record[3] in focus_df['id'].to_list()) else False
+        if is_help:
+            correct_record = focus_df.loc[focus_df['id'] == error_record[3]]
+            correct_record = correct_record.reset_index(drop=True)
+            correct_record['section'] =  section_idx
+            courses_df[courses_df['id'] == correct_record['id'][0]] = correct_record.loc[0].to_list()
+            break
+    error_df = util.get_error(courses_df).reset_index(drop=True)
+  return courses_df
+
+def pipeline(courses_df: pd.core.frame.DataFrame, image_dict: dict):
+   courses_df = recover_error(courses_df, image_dict)
+   return courses_df
+
 
 

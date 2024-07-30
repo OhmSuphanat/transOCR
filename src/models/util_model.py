@@ -4,10 +4,10 @@ from pathlib import Path
 from src.data.preprocess import *
 import os
 
-os.environ["TESSDATA_PREFIX"] = "data/model/tesseract/tessdata"
+os.environ["TESSDATA_PREFIX"] = "data/model/tesseract/build/tessdata"
 
 yolo = YOLO(Path("data/model/yolo/best-section-model.pt"))
-tesseract_path = Path("data/model/tesseract/tesseract")
+tesseract_path = Path("data/model/tesseract/build/tesseract")
 tesseract_config = r"--oem 3 --psm 6"
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
 

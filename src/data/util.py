@@ -1,5 +1,76 @@
-from src.data.postprocess import *
-from src.models.util_model import *
+from src.data import preprocess, postprocess
+from src.models import util_model
+import re
+import pandas as pd
+
+def filter_course(text: str):
+  text = text.strip()
+  pattern = r'[\u0E00-\u0E7F|0-9]{0,1}[0-9]{5}'
+  if re.search(pattern, text):
+    return text.replace("|", " ")
+  return 
+
+def get_courseID(text: str):
+  pattern = r'[\u0E00-\u0E7F|0-9]{1}[0-9]{5}'
+  result = re.findall(pattern=pattern, string=text)
+  if result:
+    return postprocess.edit_courseID(result[0])
+  print("Error from get_courseID")
+  print(text)
+  return "999"
+
+def get_course_name(text: str):
+  pattern = pattern = r'(?: [\u0E00-\u0E7F|A-z|\/]{3,})+'
+  result = re.findall(pattern=pattern, string=text)
+  if result:
+      return result[0].strip()
+  
+  print("Error from get_course_name")
+  print(text)
+  return "999"
+
+
+def get_numeric(text: str):
+  text = postprocess.text_for_numeric(text, get_course_name(text))
+  pattern = r'[\s]{2,}.+'
+  result = re.findall(pattern=pattern, string=text)
+  if result:
+    result = result[0]
+  else:
+    print("Error from get_numeric")
+    print(text)
+    result = "999"
+  allowed_chars = "123456 "
+  pattern = f"[^{re.escape(allowed_chars)}]"
+  result = re.sub(pattern=pattern, repl='', string=result)
+  result = result.replace('6', '4')
+  return result.strip()
+
+def get_unit(num_list: list):
+  return num_list[0]
+
+def get_grade(num_list: list):
+  return num_list[1]
+
+def get_unique_characters(text):
+    return ''.join(sorted(set(text)))
+
+def get_grade_and_unit(text: str):
+  blocks = text.split()
+  unit = 999
+  grade = 999
+  if len(blocks) > 2:
+    blocks = blocks[-2:]
+
+  if len(blocks) == 2:
+    for idx, block in enumerate(blocks):
+      digit = float(get_unique_characters(block))
+      if digit > 4:
+        digit /= 10
+      blocks[idx] = digit
+    unit = blocks[0]
+    grade = blocks[1]
+  return [unit, grade]
 
 
 def get_course(text: str, idx: int):
@@ -22,15 +93,6 @@ def get_course(text: str, idx: int):
                  }
   return course_dict
 
-def make_course(text_dict: dict):
-    courses_df = pd.DataFrame()
-    for idx, text in text_dict.items():
-        courses = get_course(text, idx)
-        if not verify_courses(courses):
-            raise ValueError("Amount Record's not balance.")
-        courses_df = pd.concat([courses_df, pd.DataFrame(courses)])
-    return courses_df.reset_index(drop=True).sort_values(['section'], ascending=True)
-
 def verify_courses(course_dict: dict):
     unique_size = 0
     each_size = 0
@@ -40,26 +102,14 @@ def verify_courses(course_dict: dict):
     unique_size /= len(course_dict)
     return True if unique_size == each_size else False
 
-def get_partition(n: int):
-    result = 1/n
-    return [result] * n 
-
-def slice_image(image, n: int):
-    vertical_percentages = get_partition(n)
-    # Load the image
-    width, height = image.size
-
-    # Calculate vertical slice points
-    vertical_points = [0] + [int(height * sum(vertical_percentages[:i+1])) for i in range(len(vertical_percentages))]
-    
-    # Slice the image and store each window
-    slices_dict = {}
-    for i in range(len(vertical_points) - 1):
-        upper = vertical_points[i]
-        lower = vertical_points[i + 1]
-        slice_img = image.crop((0, upper, width, lower))
-        slices_dict[i] = slice_img
-    return slices_dict
+def make_course(text_dict: dict):
+    courses_df = pd.DataFrame()
+    for idx, text in text_dict.items():
+        courses = get_course(text, idx)
+        if not verify_courses(courses):
+            raise ValueError("Amount Record's not balance.")
+        courses_df = pd.concat([courses_df, pd.DataFrame(courses)])
+    return courses_df.reset_index(drop=True).sort_values(['section'], ascending=True)
 
 def get_error(df: pd.core.frame.DataFrame):
     return df.loc[(df.id == "999") | (df.name == "999") | (df.unit == 999) | (df.grade == 999)]
@@ -67,27 +117,8 @@ def get_error(df: pd.core.frame.DataFrame):
 def get_non_error(df: pd.core.frame.DataFrame):
     return df.loc[~((df.id == "999") | (df.name == "999") | (df.unit == 999) | (df.grade == 999))]
 
-def focus_subject(image, subject_index: int, pad: int):
-    width, height = image.size
-    text_height_percent = 2.6
-    
-    # Calculate the height of each line in pixels using the given percentage
-    line_height = (text_height_percent / 100) * height
-    pading = line_height*pad#pading เอาไว้แก้ขอบบน ขอบล่าง
-
-    if(int(subject_index * line_height)-pading < 0):
-        top_y = 0 
-    else:
-        top_y = int(subject_index * line_height)-pading
-    if(int((subject_index + 1) * line_height)+pading > height):
-        bottom_y = height
-    else:
-        bottom_y = int((subject_index + 1) * line_height)+pading
-    cropped_image = image.crop((0, top_y, width, bottom_y))
-    return cropped_image
-
 def get_lines_pos(image):
-    data = get_ocr_data(image)
+    data = util_model.get_ocr_data(image)
     line_pos = []
     allow = True
     texts = data.text.to_list()
@@ -98,3 +129,11 @@ def get_lines_pos(image):
             line_pos.append(data.iloc[idx, [6, 7, 8, 9, 11]].to_dict())
             allow = False
     return line_pos
+
+def pre_process(image_dict):
+    for k, v in image_dict.items():
+        image_dict[k] = preprocess.pipeline(v)
+    return image_dict
+
+def post_process(courses_df: pd.core.frame.DataFrame, image_dict: dict):
+   return postprocess.pipeline(courses_df, image_dict)

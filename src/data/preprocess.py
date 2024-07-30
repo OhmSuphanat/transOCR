@@ -32,9 +32,6 @@ def pipeline(image):
     processed = denoise(image=image)
     return processed
 
-def preprocess(image_dict):
-    for k, v in image_dict.items():
-        image_dict[k] = pipeline(v)
-    return image_dict
+
 
 
