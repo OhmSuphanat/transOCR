@@ -73,7 +73,8 @@ def get_grade_and_unit(text: str):
     grade = blocks[1]
   return [unit, grade]
 
-def get_cat(text: str):
+def delete_not_cat(text: str):
+  text = text.strip()
   for cat in ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์", "สังคมศึกษา",
               "สุขศึกษา", "ศิลปะ", "การงานอาชีพ", "ภาษาต่างประเทศ",
               "ศึกษาค้นคว้าด้วยตนเอง", "ผลการเรียน"]:
@@ -81,15 +82,42 @@ def get_cat(text: str):
         return text
   return
 
-# def get_subject(text: str):
-#    for 
+def get_cat(text: str):
+  for cat in ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์", "สังคมศึกษา",
+            "สุขศึกษา", "ศิลปะ", "การงานอาชีพ", "ภาษาต่างประเทศ",
+            "ศึกษาค้นคว้าด้วยตนเอง", "ผลการเรียน"]:
+    if cat in text:
+        return cat
+  return "999"
+
+def get_back_weight(text: str):
+    pattern = r'[0-9][0-9|\.|\s]+'
+    result = re.findall(pattern=pattern, string=text)
+    unit, grade = 999, 999
+    if result:
+      result = result[0].strip()
+      result_list = result.split()
+      if (len(result_list) == 2):
+         unit, grade = result_list[0], result_list[1]
+    else:
+      print("Error from get_numeric")
+      print(text)
+    return [unit, grade]
+
    
 
 def get_GPA(text: str):
    words = pd.Series(text.split('\n'))
-   subjects = words.apply(get_cat).dropna()
-
-   return subjects
+   contain_cat = words.apply(delete_not_cat).dropna()
+   cats = contain_cat.apply(get_cat)
+   weight = contain_cat.apply(get_back_weight)
+   unit = weight.apply(get_unit)
+   grade = weight.apply(get_grade)
+   gpa_dict = {"ocr": contain_cat.to_list(),
+               "category": cats.to_list(),
+               "unit": unit.to_list(),
+               "grade": grade.to_list()}
+   return pd.DataFrame(gpa_dict)
 
 
 def get_course(text: str, idx: int):
