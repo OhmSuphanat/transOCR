@@ -122,12 +122,14 @@ def get_lines_pos(image):
     line_pos = []
     allow = True
     texts = data.text.to_list()
+    pattern = r'[0-9]'
     for idx, text in enumerate(texts):
         if type(text) == float:
             allow = True
         if allow and (type(text) == str):
-            line_pos.append(data.iloc[idx, [6, 7, 8, 9, 11]].to_dict())
-            allow = False
+            if re.findall(pattern, text):
+              line_pos.append(data.iloc[idx, [6, 7, 8, 9, 11]].to_dict())
+              allow = False
     return line_pos
 
 def pre_process(image_dict):

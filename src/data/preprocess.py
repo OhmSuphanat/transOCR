@@ -30,6 +30,7 @@ def add_white_space(image, width_percent: float):
 
 def pipeline(image):
     processed = denoise(image=image)
+    processed = add_white_space(processed, 0.02)
     return processed
 
 
