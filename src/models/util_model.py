@@ -6,7 +6,8 @@ import os
 
 os.environ["TESSDATA_PREFIX"] = "data/model/tesseract/build/tessdata"
 
-yolo = YOLO(Path("data/model/yolo/best-section-model.pt"))
+front_model = YOLO(Path("data/model/yolo/front-model.pt"))
+back_model = YOLO(Path("data/model/yolo/back-model.pt"))
 tesseract_path = Path("data/model/tesseract/build/tesseract")
 tesseract_config = r"--oem 3 --psm 6"
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
@@ -19,7 +20,6 @@ def get_ocr_text(image):
 def get_ocr_data(image):
   return pytesseract.pytesseract.image_to_data(image=image, lang='thnd', config=tesseract_config, output_type="data.frame")
 
-
 def images_to_texts(image_dict: dict):
   ocr_dict = {}
   for k, v in image_dict.items():
@@ -28,9 +28,9 @@ def images_to_texts(image_dict: dict):
   return ocr_dict
   
 
-def detect_section(image):
+def detect_section(image, yolo_model):
   cv2_image = pil_to_cv2(image)
-  coords = yolo(image, conf=0.8)
+  coords = yolo_model(image, conf=0.8)
 
   section_dict = {}
   boxes = [box for data in coords for box in data.boxes.data]

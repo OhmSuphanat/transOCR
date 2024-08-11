@@ -39,7 +39,8 @@ def get_numeric(text: str):
   else:
     print("Error from get_numeric")
     print(text)
-    result = "999"
+    return "999"
+  result = result.replace(".", ".5")
   allowed_chars = "123456 "
   pattern = f"[^{re.escape(allowed_chars)}]"
   result = re.sub(pattern=pattern, repl='', string=result)
@@ -71,6 +72,19 @@ def get_grade_and_unit(text: str):
     unit = blocks[0]
     grade = blocks[1]
   return [unit, grade]
+
+def get_cat(text:str):
+  for cat in ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์",
+               "สังคมศึกษา", "สุขศึกษา", "ศิลปะ",
+               "การงานอาชีพ", "ภาษาต่างประเทศ", ""]:
+     x = 0
+  return 
+
+
+def get_GPA(text: str):
+   words = pd.Series(text.split('\n'))
+   subjects = words.apply(get_cat).dropna()
+   return subjects
 
 
 def get_course(text: str, idx: int):
