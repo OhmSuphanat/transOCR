@@ -73,17 +73,22 @@ def get_grade_and_unit(text: str):
     grade = blocks[1]
   return [unit, grade]
 
-def get_cat(text:str):
-  for cat in ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์",
-               "สังคมศึกษา", "สุขศึกษา", "ศิลปะ",
-               "การงานอาชีพ", "ภาษาต่างประเทศ", ""]:
-     x = 0
-  return 
+def get_cat(text: str):
+  for cat in ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์", "สังคมศึกษา",
+              "สุขศึกษา", "ศิลปะ", "การงานอาชีพ", "ภาษาต่างประเทศ",
+              "ศึกษาค้นคว้าด้วยตนเอง", "ผลการเรียน"]:
+     if cat in text:
+        return text
+  return
 
+# def get_subject(text: str):
+#    for 
+   
 
 def get_GPA(text: str):
    words = pd.Series(text.split('\n'))
    subjects = words.apply(get_cat).dropna()
+
    return subjects
 
 
