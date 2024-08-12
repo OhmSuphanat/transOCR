@@ -29,6 +29,10 @@ def get_course_name(text: str):
   print(text)
   return "999"
 
+def remove_unallowc(allowed_chars: str, text: str):
+  pattern = f"[^{re.escape(allowed_chars)}]"
+  result = re.sub(pattern=pattern, repl='', string=text)
+  return result
 
 def get_numeric(text: str):
   text = postprocess.text_for_numeric(text, get_course_name(text))
@@ -41,9 +45,7 @@ def get_numeric(text: str):
     print(text)
     return "999"
   result = result.replace(".", ".5")
-  allowed_chars = "123456 "
-  pattern = f"[^{re.escape(allowed_chars)}]"
-  result = re.sub(pattern=pattern, repl='', string=result)
+  result = remove_unallowc("123456 ", result)
   result = result.replace('6', '4')
   return result.strip()
 
@@ -74,7 +76,7 @@ def get_grade_and_unit(text: str):
   return [unit, grade]
 
 def delete_not_cat(text: str):
-  text = text.strip()
+  text = text.strip().replace("|", " ")
   for cat in ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์", "สังคมศึกษา",
               "สุขศึกษา", "ศิลปะ", "การงานอาชีพ", "ภาษาต่างประเทศ",
               "ศึกษาค้นคว้าด้วยตนเอง", "ผลการเรียน"]:
@@ -91,6 +93,7 @@ def get_cat(text: str):
   return "999"
 
 def get_back_weight(text: str):
+    text = remove_unallowc(".0123456789 ", text)
     pattern = r'[0-9][0-9|\.|\s]+'
     result = re.findall(pattern=pattern, string=text)
     unit, grade = 999, 999
