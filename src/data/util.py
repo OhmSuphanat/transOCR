@@ -76,7 +76,7 @@ def get_grade_and_unit(text: str):
   return [unit, grade]
 
 def delete_not_cat(text: str):
-  text = text.strip().replace("|", " ")
+  text = text.strip().replace("|", "")
   for cat in ["ภาษาไทย", "คณิตศาสตร์", "วิทยาศาสตร์", "สังคมศึกษา",
               "สุขศึกษา", "ศิลปะ", "การงานอาชีพ", "ภาษาต่างประเทศ",
               "ศึกษาค้นคว้าด้วยตนเอง", "ผลการเรียน"]:
@@ -93,12 +93,12 @@ def get_cat(text: str):
   return "999"
 
 def get_back_weight(text: str):
-    text = remove_unallowc(".0123456789 ", text)
     pattern = r'[0-9][0-9|\.|\s]+'
     result = re.findall(pattern=pattern, string=text)
     unit, grade = 999, 999
     if result:
       result = result[0].strip()
+      result = remove_unallowc(".0123456789 ", result)
       result_list = result.split()
       if (len(result_list) == 2):
          unit, grade = result_list[0], result_list[1]
