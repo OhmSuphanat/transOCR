@@ -50,10 +50,16 @@ def get_numeric(text: str):
   return result.strip()
 
 def get_unit(num_list: list):
-  return num_list[0]
+  unit = num_list[0]
+  if unit > 50:
+     unit/=100
+  return unit
 
 def get_grade(num_list: list):
-  return num_list[1]
+  grade = num_list[1]
+  if grade > 4:
+     grade /= 100
+  return grade
 
 def get_unique_characters(text):
     return ''.join(sorted(set(text)))
@@ -105,7 +111,7 @@ def get_back_weight(text: str):
     else:
       print("Error from get_numeric")
       print(text)
-    return [unit, grade]
+    return [float(unit), float(grade)]
 
    
 
