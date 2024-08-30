@@ -5,7 +5,7 @@ import pandas as pd
 
 def filter_course(text: str):
   text = text.strip()
-  pattern = r'[\u0E00-\u0E7F|0-9]{0,1}[0-9]{5}'
+  pattern = r'[\u0E00-\u0E7F|0-9|๑-๙]{0,1}[0-9|๑-๙]{5}'
   if re.search(pattern, text):
     return text.replace("|", " ")
   return 
