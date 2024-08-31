@@ -2,6 +2,7 @@ from ultralytics import YOLO
 import pytesseract
 from pathlib import Path
 from src.data.preprocess import *
+import re
 import os
 
 os.environ["TESSDATA_PREFIX"] = "data/model/tesseract/build/tessdata"
@@ -19,6 +20,21 @@ def get_ocr_text(image):
 
 def get_ocr_data(image):
   return pytesseract.pytesseract.image_to_data(image=image, lang='thnd', config=tesseract_config, output_type="data.frame")
+
+def get_lines_pos(image):
+    data = get_ocr_data(image)
+    line_pos = []
+    allow = True
+    texts = data.text.to_list()
+    pattern = r'[0-9]'
+    for idx, text in enumerate(texts):
+        if type(text) == float:
+            allow = True
+        if allow and (type(text) == str):
+            if re.findall(pattern, text):
+              line_pos.append(data.iloc[idx, [6, 7, 8, 9, 11]].to_dict())
+              allow = False
+    return line_pos
 
 def images_to_texts(image_dict: dict):
   ocr_dict = {}

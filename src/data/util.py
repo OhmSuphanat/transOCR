@@ -173,20 +173,6 @@ def get_error(df: pd.core.frame.DataFrame):
 def get_non_error(df: pd.core.frame.DataFrame):
     return df.loc[~((df.id == "999") | (df.name == "999") | (df.unit == 999) | (df.grade == 999))]
 
-def get_lines_pos(image):
-    data = util_model.get_ocr_data(image)
-    line_pos = []
-    allow = True
-    texts = data.text.to_list()
-    pattern = r'[0-9]'
-    for idx, text in enumerate(texts):
-        if type(text) == float:
-            allow = True
-        if allow and (type(text) == str):
-            if re.findall(pattern, text):
-              line_pos.append(data.iloc[idx, [6, 7, 8, 9, 11]].to_dict())
-              allow = False
-    return line_pos
 
 def pre_process(image_dict):
     for k, v in image_dict.items():

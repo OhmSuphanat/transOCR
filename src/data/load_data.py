@@ -39,3 +39,15 @@ def csv_to_json(json_path:str , csv_path:str, filename:str):
     # Save the JSON data to a file
     with open(json_file_path, 'w', encoding='utf-8') as json_file:
         json.dump(json_data, json_file, ensure_ascii=False, indent=4)
+
+def get_thai_alphabet():
+    thai_alphabet = [chr(i) for i in range(ord('ก'), ord('ฮ') + 1)]
+    ls = []
+    for i in thai_alphabet:
+        str = i
+        for j in thai_alphabet:
+            str += j
+            ls.append(str)
+            str = i
+    return ls
+
