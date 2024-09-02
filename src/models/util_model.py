@@ -1,15 +1,15 @@
 from ultralytics import YOLO
 import pytesseract
 from pathlib import Path
-from src.data.preprocess import *
+from ..data import preprocess
 import re
 import os
 
-os.environ["TESSDATA_PREFIX"] = "data/model/tesseract/build/tessdata"
+os.environ["TESSDATA_PREFIX"] = "../../data/model/tesseract/build/tessdata"
+front_model = YOLO(Path("../../data/model/yolo/front-model.pt"))
+back_model = YOLO(Path("../../data/model/yolo/back-model.pt"))
+tesseract_path = Path("../../data/model/tesseract/build/tesseract")
 
-front_model = YOLO(Path("data/model/yolo/front-model.pt"))
-back_model = YOLO(Path("data/model/yolo/back-model.pt"))
-tesseract_path = Path("data/model/tesseract/build/tesseract")
 tesseract_config = r"--oem 3 --psm 6"
 pytesseract.pytesseract.tesseract_cmd = tesseract_path
 
@@ -45,7 +45,7 @@ def images_to_texts(image_dict: dict):
   
 
 def detect_section(image, yolo_model):
-  cv2_image = pil_to_cv2(image)
+  cv2_image = preprocess.pil_to_cv2(image)
   coords = yolo_model(image, conf=0.8)
 
   section_dict = {}
@@ -54,7 +54,7 @@ def detect_section(image, yolo_model):
     x, y, h, w, _, _ = box
     x, y, h, w = int(x), int(y), int(w), int(h)
     croped_img = cv2_image[y:h, x:w]
-    section_dict[idx] = cv2_to_pil(croped_img)
+    section_dict[idx] = preprocess.cv2_to_pil(croped_img)
   return section_dict
 
 

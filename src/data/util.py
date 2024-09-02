@@ -1,5 +1,5 @@
-from src.data import preprocess, postprocess
-from src.models import util_model
+from . import preprocess, postprocess
+from ..models import util_model
 import re
 import pandas as pd
 

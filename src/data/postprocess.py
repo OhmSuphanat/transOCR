@@ -1,6 +1,6 @@
 import pandas as pd
-from src.data import util
-from src.models import util_model
+from . import util
+from ..models import util_model
 
 def text_for_numeric(text: str, course_name: str):
   text = text.replace(course_name, "")
