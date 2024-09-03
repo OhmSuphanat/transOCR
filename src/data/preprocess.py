@@ -51,7 +51,7 @@ def add_line_reference(image, alphabets:list, font_dir:str, font_name:str):
     
     # Load a font
     font_path = Path(font_dir)/font_name
-    font_size = height_med * (1.5)
+    font_size = height_med * (1.7)
     font = ImageFont.truetype(font_path, font_size)
 
     

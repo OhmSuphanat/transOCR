@@ -41,7 +41,7 @@ def csv_to_json(json_path:str , csv_path:str, filename:str):
         json.dump(json_data, json_file, ensure_ascii=False, indent=4)
 
 def get_thai_alphabet():
-    thai_alphabet = [chr(i) for i in range(ord('ก'), ord('ฮ') + 1)]
+    thai_alphabet = ["ก", "ข", "ค","ญ", "ฐ", "ท", "ย", "พ", "ว", "อ"]  
     ls = []
     for i in thai_alphabet:
         str = i
