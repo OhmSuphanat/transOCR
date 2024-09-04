@@ -16,11 +16,15 @@ def get_line_ref(text: str):
    result = re.findall(pattern, text)
    return result[0]
 
+
 def get_courseID(text: str):
   pattern = r'[\u0E00-\u0E7F|0-9|\!|\@]{1}[0-9]{5}'
   result = re.findall(pattern=pattern, string=text)
   if result:
-    return postprocess.edit_courseID(result[0])
+    result = postprocess.edit_courseID(result[0])
+    pattern = r'[ท|ส|ค|ว|อ|พ|ศ|ง|I|ญ|จ|ฝ|ย]'
+    if re.findall(pattern=pattern, string=result):
+       return result
   print("Error from get_courseID")
   print(text)
   return "999"
