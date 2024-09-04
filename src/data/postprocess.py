@@ -8,7 +8,7 @@ def text_for_numeric(text: str, course_name: str):
   return text
 
 def edit_courseID(courseID: str):
-  if courseID[0] in ['1', '!']:
+  if courseID[0] in ['1', '!', 'เ']:
       courseID =  "I" + courseID[1:]
   if courseID[0] in ['า', '7']:
     courseID =  "ว" + courseID[1:]
@@ -68,6 +68,7 @@ def recover_error(courses_df: pd.core.frame.DataFrame, image_dict: dict):
     pads = [12, 10, 8, 6, 4]
     for pad in pads:
         focus_image = focus_subject(section_image, int(section_idx[1:]), pad)
+        # focus_image.show()
         focus_text = util_model.images_to_texts({section_idx[0]: focus_image})
         focus_df = util.make_course(focus_text)
         focus_df = util.get_non_error(focus_df)
